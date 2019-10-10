@@ -4,18 +4,73 @@ output:
   html_document:
     keep_md: true
 ---
+##Introduction
 
+This assignment makes use of data from a personal activity monitoring device. This device collects data at 5 minute intervals through out the day. The data was collected for two months (Oct and Nov 2012) from an anonymous individual and include the number of steps taken in 5 minute intervals each day.
+
+The dataset contains 3 variables and 17568 observations over a period of 61 days.
+
+Variables:
+
+steps: Number of steps taking in a 5-minute interval (missing values are coded as NA)
+
+date: The date on which the measurement was taken in YYYY-MM-DD format, there are 61 days in the dataset.
+
+interval: Identifier for the 5-minute interval in which measurement was taken, There are 288 intervals per day (24 hours * 12 intervals of 5 minutes per hour), numbered from 0 to 2355. For each day, the first interval is 0 (00.00pm), the last interval is 2355 (11.55pm)
+
+
+##Load all required packages
+```{r Load Libraries, echo=TRUE, results='hide'}
+library(lubridate)
+```
 
 ## Loading and preprocessing the data
+- First the working directory is set.
+-The file is then loaded and read
 
+```{r readfile, echo= TRUE}
+activity <- read.csv("activity.csv", header = TRUE, na.strings = "NA")
 
+```
+
+-The date is then converted into the right format
+```{r, echo = TRUE}
+activity$date <- ymd(activity$date)
+```
+
+-next we inspect the dataset
+```{r summary, echo=}
+head (activity)
+
+summary(activity)
+
+str(activity)
+```
 
 ## What is mean total number of steps taken per day?
 
+- To calculate the mean total number of steps per day, we first use the aggregate function and remove missing values (NA's) as mentioned in the question. 
+
+```{r histogram, echo=TRUE, fig.height=6, fig.width=8}
+
+steps_per_day <- aggregate(steps~date, data = activity, FUN = sum, na.rm=TRUE)
+
+mean_steps <- as.integer(mean(steps_per_day$steps))
+
+median_steps <- as.integer(median(steps_per_day$steps))
+
+hist(steps_per_day$steps, xlab = "Steps per day", ylab = "frequency", 
+     main = "Histogram of mean total steps/day", col= "blue")
+abline(v=c(mean_steps,median_steps), col=c("black", "red"), lty=c(1,3), lwd=c(1, 3))
+```
 
 
 ## What is the average daily activity pattern?
 
+-To calculate the average daily pattern, we will first create a time-series graph with the 5 minute intervals on the x-axis and the average number of steps per day averaged across all days in the y-axis. 
+
+```{r timeseries, echo=TRUE, fig.height=6, fig.width=8}
+steps_mean <- aggregate(steps~interval, data = activity, FUN = mean, na.rm=TRUE)
 
 
 ## Imputing missing values
