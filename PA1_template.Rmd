@@ -22,11 +22,12 @@ interval: Identifier for the 5-minute interval in which measurement was taken, T
 ##Load all required packages
 ```{r Load Libraries, echo=TRUE, results='hide'}
 library(lubridate)
+library(ggplot2)
 ```
 
 ## Loading and preprocessing the data
 - First the working directory is set.
--The file is then loaded and read
+- The file is then loaded and read
 
 ```{r readfile, echo= TRUE}
 activity <- read.csv("activity.csv", header = TRUE, na.strings = "NA")
@@ -34,12 +35,14 @@ activity <- read.csv("activity.csv", header = TRUE, na.strings = "NA")
 ```
 
 -The date is then converted into the right format
+
 ```{r, echo = TRUE}
 activity$date <- ymd(activity$date)
 ```
 
 -next we inspect the dataset
-```{r summary, echo=}
+
+```{r summary, echo = TRUE}
 head (activity)
 
 summary(activity)
@@ -103,6 +106,7 @@ missing <- subset(activity, is.na(steps))
 hist(missing$interval, main = "Spread of NA's over intervals")
 hist(as.numeric(missing$date), main = "Spread of NA's over dates")
 ```
+
 The NA's seem equally spread over different intervals and there seem to be na's only on some dates. To correct for this, we can take the mean for the missing intervals across all days.
 
 ```{r, echo=TRUE,}
@@ -139,3 +143,25 @@ sprintf("the median steps is %g", median_new_steps)
 The results are very similar. 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+For this part the \color{red}{\verb|weekdays()|}weekdays() function may be of some help here. Use the dataset with the filled-in missing values for this part.
+
+Create a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day.
+
+```{r, echo=TRUE}
+weekdays1 <- c('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday')
+
+new_table$day <- factor((weekdays(new_table$date) %in% weekdays1), 
+         levels=c(FALSE, TRUE), labels=c('weekend', 'weekday'))
+```
+
+Make a panel plot containing a time series plot (i.e. \color{red}{\verb|type = "l"|}type="l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). 
+
+```{r, echo=TRUE, fig.height=6, fig.width=8}
+
+mean_step_day <- aggregate(steps~interval+day, data = new_table, FUN = mean, na.rm=TRUE)
+time_series <- ggplot(mean_step_day, aes(interval,steps))
+time_series + geom_line(color="black")+facet_grid (day~.) +labs(x="intervals",y="total      steps per interval", main = "average activity patterns over weekends and weekdays")
+```
+
+From the graphs it looks like people start walking earlier on weekdays and the more consistently during the weekends. 
